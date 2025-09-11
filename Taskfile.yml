@@ -1,0 +1,22 @@
+# https://taskfile.dev
+version: '3'
+# vars:
+#   key: value
+tasks:
+  default:
+    desc: "List tasks"
+    cmds:
+      - task -a
+
+  linter:
+    desc: "execute linter"
+    cmds:
+      # - ansible-lint *.yml --skip-list name[template],meta-no-info,yaml[line-length],package-latest,latest[git]
+      - ansible-lint .
+
+  test:
+    desc: "execute molecule tests"
+    cmds:
+      - rm -rf ~/.ansible/roles/sgaunet.foregejo
+      - molecule destroy
+      - molecule test
