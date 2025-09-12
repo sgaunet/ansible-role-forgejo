@@ -1,0 +1,21 @@
+---
+# .ansible-lint configuration file
+exclude_paths:
+  - .ansible/
+  - .devbox/
+  - .git/
+  - molecule/default/.pytest_cache/
+  - molecule/default/__pycache__/
+  - '*.retry'
+
+# Enable profile and extend default rules
+profile: production
+
+# Skip specific rules if needed
+skip_list: []
+
+# Use default rules
+use_default_rules: true
+
+# Enable offline mode to avoid dependency issues
+offline: true
