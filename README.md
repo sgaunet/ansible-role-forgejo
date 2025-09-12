@@ -12,6 +12,7 @@ This role implements the [binary installation method](https://forgejo.org/docs/l
 
 ## Features
 
+- Creates dedicated git user for Forgejo service
 - Downloads and installs Forgejo binary from official releases
 - Version management with automatic upgrades/downgrades
 - Idempotent installation (only downloads when version differs)
@@ -34,6 +35,18 @@ forgejo_target_version: "12.0.3"
 
 # Installation directory for the forgejo binary
 forgejo_install_path: "/usr/local/bin"
+```
+
+### Git User Configuration
+
+The role creates a dedicated system user for Forgejo. You can customize these settings:
+
+```yaml
+# Git user configuration for Forgejo service
+forgejo_user: "git"              # Username for Forgejo service
+forgejo_group: "git"             # Group name for Forgejo service  
+forgejo_home: "/home/git"        # Home directory for git user
+forgejo_shell: "/bin/bash"       # Shell for git user
 ```
 
 ### Advanced Configuration
@@ -212,10 +225,11 @@ ansible-role-forgejo/
 
 ## How It Works
 
-1. **Version Check**: The role first checks if Forgejo is already installed and gets its version
-2. **Conditional Download**: Only downloads if the installed version differs from the target version
-3. **Binary Installation**: Downloads the binary from Codeberg and installs it to the configured path (default: `/usr/local/bin`)
-4. **Verification**: Verifies the installation by running `forgejo -v`
+1. **User Setup**: Creates a dedicated `git` system user and group for Forgejo service
+2. **Version Check**: The role checks if Forgejo is already installed and gets its version
+3. **Conditional Download**: Only downloads if the installed version differs from the target version
+4. **Binary Installation**: Downloads the binary from Codeberg and installs it with proper ownership to the configured path (default: `/usr/local/bin`)
+5. **Verification**: Verifies the installation by running `forgejo -v`
 
 ## Supported Platforms
 

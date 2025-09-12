@@ -1,6 +1,23 @@
 ---
 # Tasks to check and install Forgejo binary
 
+- name: Create git group for Forgejo
+  ansible.builtin.group:
+    name: "{{ forgejo_group }}"
+    system: true
+    state: present
+
+- name: Create git user for Forgejo
+  ansible.builtin.user:
+    name: "{{ forgejo_user }}"
+    group: "{{ forgejo_group }}"
+    system: true
+    shell: "{{ forgejo_shell }}"
+    home: "{{ forgejo_home }}"
+    comment: "Git Version Control"
+    create_home: true
+    state: present
+
 - name: Get version of Forgejo binary if installed
   ansible.builtin.shell: |
     set -o pipefail
@@ -12,37 +29,43 @@
   failed_when: false
   check_mode: false
 
+- name: Debug version comparison
+  ansible.builtin.debug:
+    msg:
+      - "Installed version: {{ forgejo_version_installed.stdout }}"
+      - "Target version: {{ forgejo_target_version }}"
+      - "Versions match: {{ forgejo_version_installed.stdout == forgejo_target_version }}"
+
 - name: Install Forgejo binary
   when:
     - not ansible_check_mode
-    - forgejo_version_installed.stdout != ("v" + forgejo_target_version)
+    - forgejo_version_installed.stdout != forgejo_target_version
   block:
     - name: Create temporary directory for Forgejo download
-      ansible.builtin.file:
-        path: "/tmp/forgejo_install/"
+      ansible.builtin.tempfile:
         state: directory
-        mode: '0755'
+        suffix: "_forgejo"
+      register: forgejo_temp_dir
 
     - name: Download Forgejo binary release
       ansible.builtin.get_url:
-        url: >
-          https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/
-          forgejo-{{ forgejo_target_version }}-{{ forgejo_os }}-{{ forgejo_arch }}
-        dest: "/tmp/forgejo_install/forgejo"
+        # yamllint disable-line rule:line-length
+        url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/forgejo-{{ forgejo_target_version }}-{{ forgejo_os }}-{{ forgejo_arch }}"
+        dest: "{{ forgejo_temp_dir.path }}/forgejo"
         mode: '0755'
 
     - name: Install Forgejo binary to system path
       ansible.builtin.copy:
-        src: "/tmp/forgejo_install/forgejo"
+        src: "{{ forgejo_temp_dir.path }}/forgejo"
         dest: "{{ forgejo_install_path }}/forgejo"
-        owner: root
-        group: root
+        owner: "{{ forgejo_user }}"
+        group: "{{ forgejo_group }}"
         mode: "0755"
         remote_src: true
 
     - name: Remove temporary download directory
       ansible.builtin.file:
-        path: "/tmp/forgejo_install"
+        path: "{{ forgejo_temp_dir.path }}"
         state: absent
 
     - name: Verify Forgejo installation

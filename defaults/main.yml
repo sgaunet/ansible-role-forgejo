@@ -1,7 +1,14 @@
 ---
 # defaults file for ansible-role-forgejo
 
+# Forgejo version and installation settings
 forgejo_target_version: "12.0.3"
 forgejo_install_path: "/usr/local/bin"  # Installation directory for the forgejo binary
 forgejo_os: "linux"  # Currently only linux binaries are available
 forgejo_arch: "amd64"  # Options: amd64, arm64
+
+# Git user configuration for Forgejo service
+forgejo_user: "git"  # Username for Forgejo service
+forgejo_group: "git"  # Group name for Forgejo service
+forgejo_home: "/home/git"  # Home directory for git user
+forgejo_shell: "/bin/bash"  # Shell for git user
