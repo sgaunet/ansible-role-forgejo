@@ -38,9 +38,6 @@ forgejo_target_version: "12.0.3"
 You can override the following variables for specific use cases:
 
 ```yaml
-# Custom installation path (default: /usr/local/bin/forgejo)
-forgejo_install_path: "/usr/local/bin/forgejo"
-
 # Architecture (default: amd64, options: amd64, arm64)
 forgejo_arch: "amd64"
 ```
