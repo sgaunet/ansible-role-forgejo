@@ -2,7 +2,9 @@
 # Tasks to check and install Forgejo binary
 
 - name: Get version of Forgejo binary if installed
-  ansible.builtin.shell: "{{ forgejo_install_path }}/forgejo -v | awk '{ print $3 }' | awk -F\"+\" '{ print $1 }'"
+  ansible.builtin.shell: |
+    set -o pipefail
+    {{ forgejo_install_path }}/forgejo -v | awk '{ print $3 }' | awk -F"+" '{ print $1 }'
   args:
     executable: /bin/bash
   register: forgejo_version_installed
@@ -23,7 +25,9 @@
 
     - name: Download Forgejo binary release
       ansible.builtin.get_url:
-        url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/forgejo-{{ forgejo_target_version }}-{{ forgejo_os }}-{{ forgejo_arch }}"
+        url: >
+          https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/
+          forgejo-{{ forgejo_target_version }}-{{ forgejo_os }}-{{ forgejo_arch }}
         dest: "/tmp/forgejo_install/forgejo"
         mode: '0755'
 

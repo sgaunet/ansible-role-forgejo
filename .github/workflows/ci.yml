@@ -3,12 +3,6 @@ name: CI
 'on':
   pull_request:
   push:
-    branches:
-      - main
-      - master
-      - develop
-      - 'feature/**'
-      - 'fix/**'
   schedule:
     - cron: "0 2 * * 0"
 
