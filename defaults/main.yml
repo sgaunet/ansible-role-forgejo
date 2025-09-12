@@ -12,3 +12,7 @@ forgejo_user: "git"  # Username for Forgejo service
 forgejo_group: "git"  # Group name for Forgejo service
 forgejo_home: "/home/git"  # Home directory for git user
 forgejo_shell: "/bin/bash"  # Shell for git user
+
+# Forgejo directory configuration
+forgejo_data_path: "/var/lib/forgejo"  # Data directory for repositories and application data
+forgejo_config_path: "/etc/forgejo"  # Configuration directory for app.ini and other config files

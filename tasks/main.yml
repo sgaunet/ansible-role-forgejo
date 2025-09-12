@@ -18,6 +18,22 @@
     create_home: true
     state: present
 
+- name: Create Forgejo data directory
+  ansible.builtin.file:
+    path: "{{ forgejo_data_path }}"
+    state: directory
+    owner: "{{ forgejo_user }}"
+    group: "{{ forgejo_group }}"
+    mode: '0750'
+
+- name: Create Forgejo configuration directory
+  ansible.builtin.file:
+    path: "{{ forgejo_config_path }}"
+    state: directory
+    owner: root
+    group: "{{ forgejo_group }}"
+    mode: '0770'
+
 - name: Get version of Forgejo binary if installed
   ansible.builtin.shell: |
     set -o pipefail
