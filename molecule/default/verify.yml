@@ -7,7 +7,7 @@
   tasks:
     - name: Stat forgejo binary
       ansible.builtin.stat:
-        path: /usr/local/bin/forgejo
+        path: "{{ forgejo_install_path | default('/usr/local/bin') }}/forgejo"
       register: forgejo_present
     - name: Check forgejo is present
       ansible.builtin.assert:

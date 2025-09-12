@@ -31,6 +31,9 @@ Available variables are listed below, along with default values (see `defaults/m
 ```yaml
 # Target version of Forgejo to install
 forgejo_target_version: "12.0.3"
+
+# Installation directory for the forgejo binary
+forgejo_install_path: "/usr/local/bin"
 ```
 
 ### Advanced Configuration
@@ -70,6 +73,18 @@ None.
   become: yes
   vars:
     forgejo_target_version: "12.0.3"
+  roles:
+    - sgaunet.forgejo
+```
+
+### Custom Installation Path
+
+```yaml
+---
+- hosts: servers
+  become: yes
+  vars:
+    forgejo_install_path: "/opt/forgejo/bin"
   roles:
     - sgaunet.forgejo
 ```
@@ -199,7 +214,7 @@ ansible-role-forgejo/
 
 1. **Version Check**: The role first checks if Forgejo is already installed and gets its version
 2. **Conditional Download**: Only downloads if the installed version differs from the target version
-3. **Binary Installation**: Downloads the binary from Codeberg and installs it to `/usr/local/bin`
+3. **Binary Installation**: Downloads the binary from Codeberg and installs it to the configured path (default: `/usr/local/bin`)
 4. **Verification**: Verifies the installation by running `forgejo -v`
 
 ## Supported Platforms

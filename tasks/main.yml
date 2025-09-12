@@ -2,7 +2,7 @@
 # Tasks to check and install Forgejo binary
 
 - name: Get version of Forgejo binary if installed
-  ansible.builtin.shell: "/usr/local/bin/forgejo -v | awk '{ print $3 }' | awk -F\"+\" '{ print $1 }'"
+  ansible.builtin.shell: "{{ forgejo_install_path }}/forgejo -v | awk '{ print $3 }' | awk -F\"+\" '{ print $1 }'"
   args:
     executable: /bin/bash
   register: forgejo_version_installed
@@ -30,7 +30,7 @@
     - name: Install Forgejo binary to system path
       ansible.builtin.copy:
         src: "/tmp/forgejo_install/forgejo"
-        dest: "/usr/local/bin/forgejo"
+        dest: "{{ forgejo_install_path }}/forgejo"
         owner: root
         group: root
         mode: "0755"
@@ -42,7 +42,7 @@
         state: absent
 
     - name: Verify Forgejo installation
-      ansible.builtin.command: "/usr/local/bin/forgejo -v"
+      ansible.builtin.command: "{{ forgejo_install_path }}/forgejo -v"
       register: forgejo_verify
       changed_when: false
 
