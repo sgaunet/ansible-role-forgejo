@@ -16,6 +16,8 @@ jobs:
 
       - name: Install devbox
         uses: jetify-com/devbox-install-action@v0.11.0
+        with:
+          enable-cache: true
 
       - name: Run ansible-lint
         run: |
@@ -39,6 +41,8 @@ jobs:
 
       - name: Install devbox
         uses: jetify-com/devbox-install-action@v0.11.0
+        with:
+          enable-cache: true
 
       - name: Run Molecule tests
         run: |
