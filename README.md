@@ -8,6 +8,8 @@ An Ansible Role that installs [Forgejo](https://forgejo.org/) binary on Linux sy
 
 Forgejo is a self-hosted lightweight software forge. Easy to install and low maintenance, it just does the job. Forgejo is a community-driven fork of Gitea.
 
+This role implements the [binary installation method](https://forgejo.org/docs/latest/admin/installation/binary/) as described in the official Forgejo documentation, providing an automated and idempotent way to manage Forgejo binary installations across your infrastructure.
+
 ## Features
 
 - Downloads and installs Forgejo binary from official releases
@@ -245,5 +247,6 @@ This role was created by [Sylvain Gaunet](https://github.com/sgaunet).
 
 - [Forgejo Official Website](https://forgejo.org/)
 - [Forgejo Documentation](https://forgejo.org/docs/latest/)
+- [Forgejo Binary Installation Guide](https://forgejo.org/docs/latest/admin/installation/binary/)
 - [Forgejo Releases](https://codeberg.org/forgejo/forgejo/releases)
 - [Ansible Galaxy Page](https://galaxy.ansible.com/sgaunet/forgejo)
