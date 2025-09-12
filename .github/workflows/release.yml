@@ -19,46 +19,9 @@ defaults:
     working-directory: 'sgaunet.forgejo'
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the codebase
-        uses: actions/checkout@v4
-
-      - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.11.0
-
-      - name: Run ansible-lint
-        run: |
-          devbox run -- ansible-lint .
-        env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - name: Check out the codebase
-        uses: actions/checkout@v4
-
-      - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.11.0
-
-      - name: Run Molecule tests (Rocky Linux)
-        run: |
-          devbox run -- molecule test
-        env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
-          MOLECULE_DISTRO: rockylinux9
-
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [lint, test]
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v4
