@@ -23,7 +23,7 @@
 
     - name: Download Forgejo binary release
       ansible.builtin.get_url:
-        url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/forgejo-{{ forgejo_target_version }}-linux-{{ forgejo_arch }}"
+        url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/forgejo-{{ forgejo_target_version }}-{{ forgejo_os }}-{{ forgejo_arch }}"
         dest: "/tmp/forgejo_install/forgejo"
         mode: '0755'
 

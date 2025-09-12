@@ -2,4 +2,5 @@
 # defaults file for ansible-role-forgejo
 
 forgejo_target_version: "12.0.3"
+forgejo_os: "linux"  # Currently only linux binaries are available
 forgejo_arch: "amd64"  # Options: amd64, arm64

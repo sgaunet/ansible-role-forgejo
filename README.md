@@ -21,7 +21,7 @@ This role implements the [binary installation method](https://forgejo.org/docs/l
 ## Requirements
 
 - Ansible >= 2.15
-- Linux system (EL 8/9, Ubuntu 20.04+, Debian 11+, Fedora 38+)
+- Linux system (required - Forgejo only provides Linux binaries)
 - Internet connectivity to download Forgejo releases from Codeberg
 
 ## Role Variables
@@ -38,6 +38,10 @@ forgejo_target_version: "12.0.3"
 You can override the following variables for specific use cases:
 
 ```yaml
+# Operating system (default: linux)
+# Note: Currently only Linux binaries are provided by Forgejo
+forgejo_os: "linux"
+
 # Architecture (default: amd64, options: amd64, arm64)
 forgejo_arch: "amd64"
 ```
@@ -88,6 +92,7 @@ None.
   roles:
     - sgaunet.forgejo
 ```
+
 
 ## Installation
 
@@ -203,6 +208,8 @@ ansible-role-forgejo/
 - **Ubuntu**: 20.04 (Focal), 22.04 (Jammy), 24.04 (Noble)
 - **Debian**: 11 (Bullseye), 12 (Bookworm)
 - **Fedora**: 38, 39, 40
+
+**Note**: Forgejo currently only provides Linux binaries. The `forgejo_os` variable is available for future compatibility when other operating systems are supported.
 
 ## Contributing
 
