@@ -1,0 +1,44 @@
+---
+galaxy_info:
+  role_name: forgejo
+  author: sgaunet
+  namespace: sgaunet
+  description: Install and configure Forgejo Git service binary on Linux systems
+  company: ""
+  license: "MIT"
+  min_ansible_version: "2.15"
+  issue_tracker_url: https://github.com/sgaunet/ansible-role-forgejo/issues
+  platforms:
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - "38"
+        - "39"
+        - "40"
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+  galaxy_tags:
+    - forgejo
+    - git
+    - gitea
+    - vcs
+    - cli
+    - redhat
+    - rhel
+    - centos
+    - rocky
+    - debian
+    - ubuntu
+    - fedora
+
+dependencies: []

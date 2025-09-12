@@ -14,9 +14,7 @@ tasks:
       # - ansible-lint *.yml --skip-list name[template],meta-no-info,yaml[line-length],package-latest,latest[git]
       - ansible-lint .
 
-  test:
+  tests:
     desc: "execute molecule tests"
     cmds:
-      - rm -rf ~/.ansible/roles/sgaunet.foregejo
-      - molecule destroy
-      - molecule test
+      - devbox run -- molecule test

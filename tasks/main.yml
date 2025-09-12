@@ -1,0 +1,51 @@
+---
+# Tasks to check and install Forgejo binary
+
+- name: Get version of Forgejo binary if installed
+  ansible.builtin.shell: "/usr/local/bin/forgejo -v | awk '{ print $3 }' | awk -F\"+\" '{ print $1 }'"
+  args:
+    executable: /bin/bash
+  register: forgejo_version_installed
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Install Forgejo binary
+  when:
+    - not ansible_check_mode
+    - forgejo_version_installed.stdout != ("v" + forgejo_target_version)
+  block:
+    - name: Create temporary directory for Forgejo download
+      ansible.builtin.file:
+        path: "/tmp/forgejo_install/"
+        state: directory
+        mode: '0755'
+
+    - name: Download Forgejo binary release
+      ansible.builtin.get_url:
+        url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_target_version }}/forgejo-{{ forgejo_target_version }}-linux-amd64"
+        dest: "/tmp/forgejo_install/forgejo"
+        mode: '0755'
+
+    - name: Install Forgejo binary to system path
+      ansible.builtin.copy:
+        src: "/tmp/forgejo_install/forgejo"
+        dest: "/usr/local/bin/forgejo"
+        owner: root
+        group: root
+        mode: "0755"
+        remote_src: true
+
+    - name: Remove temporary download directory
+      ansible.builtin.file:
+        path: "/tmp/forgejo_install"
+        state: absent
+
+    - name: Verify Forgejo installation
+      ansible.builtin.command: "/usr/local/bin/forgejo -v"
+      register: forgejo_verify
+      changed_when: false
+
+    - name: Display installed Forgejo version
+      ansible.builtin.debug:
+        msg: "Forgejo installed: {{ forgejo_verify.stdout }}"
