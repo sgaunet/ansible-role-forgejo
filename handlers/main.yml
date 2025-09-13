@@ -1,0 +1,12 @@
+---
+# Handlers for ansible-role-forgejo
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart forgejo service
+  ansible.builtin.systemd:
+    name: forgejo
+    state: restarted
+  when: forgejo_service_enabled | default(true)

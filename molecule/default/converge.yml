@@ -2,6 +2,9 @@
 - name: Converge
   hosts: all
   become: true
+  vars:
+    forgejo_security_secret_key: "VerySecureSecretKeyForTestingOnly1234567890"
+    forgejo_security_internal_token: "VerySecureInternalTokenForTestingOnly1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz"
   tasks:
     - name: "Include sgaunet.forgejo role"
       ansible.builtin.include_role:

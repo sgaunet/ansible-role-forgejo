@@ -1,0 +1,33 @@
+[Unit]
+Description={{ forgejo_service_description }}
+After=syslog.target
+After=network.target
+{% if forgejo_database_type is defined and forgejo_database_type == 'mysql' %}
+Wants=mysql.service
+After=mysql.service
+{% endif %}
+{% if forgejo_database_type is defined and forgejo_database_type == 'mariadb' %}
+Wants=mariadb.service
+After=mariadb.service
+{% endif %}
+{% if forgejo_database_type is defined and forgejo_database_type == 'postgres' %}
+Wants=postgresql.service
+After=postgresql.service
+{% endif %}
+
+[Service]
+Type=simple
+User={{ forgejo_user }}
+Group={{ forgejo_group }}
+WorkingDirectory={{ forgejo_data_path }}/
+ExecStart={{ forgejo_install_path }}/forgejo web --config {{ forgejo_config_path }}/app.ini
+Restart=always
+RestartSec={{ forgejo_service_restart_sec }}
+Environment=USER={{ forgejo_user }} HOME={{ forgejo_home }} FORGEJO_WORK_DIR={{ forgejo_data_path }}
+{% if forgejo_service_enable_capabilities %}
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target
