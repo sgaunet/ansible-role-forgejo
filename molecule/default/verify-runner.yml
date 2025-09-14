@@ -1,0 +1,85 @@
+---
+# Verify playbook for Forgejo Runner installation
+
+- name: Verify Runner
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Stat forgejo binary
+      ansible.builtin.stat:
+        path: "{{ forgejo_install_path | default('/usr/local/bin') }}/forgejo"
+      register: forgejo_present
+
+    - name: Check forgejo is present
+      ansible.builtin.assert:
+        that:
+          - forgejo_present.stat.exists
+        fail_msg: "forgejo not setup"
+        success_msg: "forgejo is setup"
+
+    - name: Stat forgejo-runner binary
+      ansible.builtin.stat:
+        path: "{{ forgejo_runner_install_path | default('/usr/local/bin') }}/forgejo-runner"
+      register: forgejo_runner_present
+
+    - name: Check forgejo-runner is present
+      ansible.builtin.assert:
+        that:
+          - forgejo_runner_present.stat.exists
+        fail_msg: "forgejo-runner not installed"
+        success_msg: "forgejo-runner is installed"
+
+    - name: Check runner user exists
+      ansible.builtin.command: id runner
+      register: runner_user_check
+      changed_when: false
+      failed_when: runner_user_check.rc != 0
+
+    - name: Stat runner configuration directory
+      ansible.builtin.stat:
+        path: "{{ forgejo_runner_config_path | default('/etc/forgejo-runner') }}"
+      register: runner_config_dir
+
+    - name: Check runner configuration directory exists
+      ansible.builtin.assert:
+        that:
+          - runner_config_dir.stat.exists
+          - runner_config_dir.stat.isdir
+        fail_msg: "Runner configuration directory not created"
+        success_msg: "Runner configuration directory exists"
+
+    - name: Stat runner configuration file
+      ansible.builtin.stat:
+        path: "{{ forgejo_runner_config_path | default('/etc/forgejo-runner') }}/config.yml"
+      register: runner_config_file
+
+    - name: Check runner configuration file exists
+      ansible.builtin.assert:
+        that:
+          - runner_config_file.stat.exists
+        fail_msg: "Runner configuration file not created"
+        success_msg: "Runner configuration file exists"
+
+    - name: Check forgejo-runner service file exists
+      ansible.builtin.stat:
+        path: /etc/systemd/system/forgejo-runner.service
+      register: runner_service_file
+
+    - name: Verify runner service file
+      ansible.builtin.assert:
+        that:
+          - runner_service_file.stat.exists
+        fail_msg: "Runner systemd service file not created"
+        success_msg: "Runner systemd service file exists"
+
+    - name: Get runner service status
+      ansible.builtin.systemd:
+        name: forgejo-runner
+      register: runner_service_status
+
+    - name: Verify runner service is enabled
+      ansible.builtin.assert:
+        that:
+          - runner_service_status.status.UnitFileState == "enabled"
+        fail_msg: "Runner service is not enabled"
+        success_msg: "Runner service is enabled"

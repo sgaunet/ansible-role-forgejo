@@ -1,0 +1,198 @@
+---
+# Tasks to install and configure Forgejo Runner
+
+- name: Create runner group
+  ansible.builtin.group:
+    name: "{{ forgejo_runner_group }}"
+    system: true
+    state: present
+
+- name: Create runner user
+  ansible.builtin.user:
+    name: "{{ forgejo_runner_user }}"
+    group: "{{ forgejo_runner_group }}"
+    system: true
+    shell: "{{ forgejo_runner_shell }}"
+    home: "{{ forgejo_runner_home }}"
+    comment: "Forgejo Runner"
+    create_home: true
+    state: present
+
+- name: Add runner user to docker group if Docker support enabled
+  ansible.builtin.user:
+    name: "{{ forgejo_runner_user }}"
+    groups: docker
+    append: true
+  when:
+    - forgejo_runner_enable_docker | bool
+    - ansible_facts.getent_group.docker is defined
+
+- name: Create runner configuration directory
+  ansible.builtin.file:
+    path: "{{ forgejo_runner_config_path }}"
+    state: directory
+    owner: "{{ forgejo_runner_user }}"
+    group: "{{ forgejo_runner_group }}"
+    mode: '0750'
+
+- name: Create runner data directory
+  ansible.builtin.file:
+    path: "{{ forgejo_runner_data_path }}"
+    state: directory
+    owner: "{{ forgejo_runner_user }}"
+    group: "{{ forgejo_runner_group }}"
+    mode: '0750'
+
+- name: Get version of Forgejo Runner binary if installed
+  ansible.builtin.shell: |
+    set -o pipefail
+    {{ forgejo_runner_install_path }}/forgejo-runner --version | awk '{ print $3 }' | sed 's/^v//'
+  args:
+    executable: /bin/bash
+  register: forgejo_runner_version_installed
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Debug runner version comparison
+  ansible.builtin.debug:
+    msg:
+      - "Installed runner version: {{ forgejo_runner_version_installed.stdout }}"
+      - "Target runner version: {{ forgejo_runner_version }}"
+      - "Versions match: {{ forgejo_runner_version_installed.stdout == forgejo_runner_version }}"
+
+- name: Install Forgejo Runner binary
+  when:
+    - not ansible_check_mode
+    - forgejo_runner_version_installed.stdout != forgejo_runner_version
+  block:
+    - name: Create temporary directory for Forgejo Runner download
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: "_forgejo_runner"
+      register: forgejo_runner_temp_dir
+
+    - name: Download Forgejo Runner binary release
+      ansible.builtin.get_url:
+        # yamllint disable-line rule:line-length
+        url: "https://code.forgejo.org/forgejo/runner/releases/download/v{{ forgejo_runner_version }}/forgejo-runner-{{ forgejo_runner_version }}-{{ forgejo_runner_os }}-{{ forgejo_runner_arch }}"
+        dest: "{{ forgejo_runner_temp_dir.path }}/forgejo-runner"
+        mode: '0755'
+
+    - name: Install Forgejo Runner binary to system path
+      ansible.builtin.copy:
+        src: "{{ forgejo_runner_temp_dir.path }}/forgejo-runner"
+        dest: "{{ forgejo_runner_install_path }}/forgejo-runner"
+        owner: root
+        group: root
+        mode: "0755"
+        remote_src: true
+
+    - name: Remove temporary runner download directory
+      ansible.builtin.file:
+        path: "{{ forgejo_runner_temp_dir.path }}"
+        state: absent
+
+    - name: Verify Forgejo Runner installation
+      ansible.builtin.command: "{{ forgejo_runner_install_path }}/forgejo-runner --version"
+      register: forgejo_runner_verify
+      changed_when: false
+
+    - name: Display installed Forgejo Runner version
+      ansible.builtin.debug:
+        msg: "Forgejo Runner installed: {{ forgejo_runner_verify.stdout }}"
+
+- name: Check if runner config exists
+  ansible.builtin.stat:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+  register: runner_config_stat
+
+- name: Create runner home .ansible/tmp directory
+  ansible.builtin.file:
+    path: "{{ forgejo_runner_home }}/.ansible/tmp"
+    state: directory
+    owner: "{{ forgejo_runner_user }}"
+    group: "{{ forgejo_runner_group }}"
+    mode: '0700'
+  when: not runner_config_stat.stat.exists
+
+- name: Generate default runner configuration
+  ansible.builtin.shell: |
+    {{ forgejo_runner_install_path }}/forgejo-runner generate-config > {{ forgejo_runner_config_path }}/config.yml
+  args:
+    creates: "{{ forgejo_runner_config_path }}/config.yml"
+  become: true
+  become_user: "{{ forgejo_runner_user }}"
+  when: not runner_config_stat.stat.exists
+
+- name: Check if runner config exists after generation
+  ansible.builtin.stat:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+  register: runner_config_final_stat
+
+- name: Set runner configuration file permissions
+  ansible.builtin.file:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+    owner: "{{ forgejo_runner_user }}"
+    group: "{{ forgejo_runner_group }}"
+    mode: '0640'
+  when: runner_config_final_stat.stat.exists
+
+- name: Update runner log level in configuration
+  ansible.builtin.lineinfile:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+    regexp: '^(\s*)level:'
+    line: '  level: {{ forgejo_runner_log_level }}'
+    backup: true
+  when: runner_config_final_stat.stat.exists
+  notify:
+    - Restart forgejo-runner service
+
+- name: Update runner capacity in configuration
+  ansible.builtin.lineinfile:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+    regexp: '^(\s*)capacity:'
+    line: '  capacity: {{ forgejo_runner_capacity }}'
+    backup: true
+  when: runner_config_final_stat.stat.exists
+  notify:
+    - Restart forgejo-runner service
+
+- name: Update runner timeout in configuration
+  ansible.builtin.lineinfile:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+    regexp: '^(\s*)timeout:'
+    line: '  timeout: {{ forgejo_runner_timeout }}s'
+    backup: true
+  when: runner_config_final_stat.stat.exists
+  notify:
+    - Restart forgejo-runner service
+
+- name: Update runner insecure setting in configuration
+  ansible.builtin.lineinfile:
+    path: "{{ forgejo_runner_config_path }}/config.yml"
+    regexp: '^(\s*)insecure:'
+    line: '  insecure: {{ forgejo_runner_insecure | lower }}'
+    backup: true
+  when: runner_config_final_stat.stat.exists
+  notify:
+    - Restart forgejo-runner service
+
+- name: Create systemd service file for Forgejo Runner
+  ansible.builtin.template:
+    src: forgejo-runner.service.j2
+    dest: /etc/systemd/system/forgejo-runner.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Reload systemd daemon
+    - Restart forgejo-runner service
+
+- name: Start and enable Forgejo Runner service
+  ansible.builtin.systemd:
+    name: forgejo-runner
+    enabled: "{{ forgejo_runner_service_enabled }}"
+    state: "{{ 'started' if forgejo_runner_service_enabled else 'stopped' }}"
+    daemon_reload: true
+  when: forgejo_runner_service_enabled is defined

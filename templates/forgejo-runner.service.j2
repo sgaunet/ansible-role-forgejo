@@ -1,0 +1,31 @@
+[Unit]
+Description=Forgejo Runner
+Documentation=https://forgejo.org/docs/latest/admin/actions/
+After=network-online.target docker.service
+Wants=network-online.target
+{% if forgejo_runner_enable_docker %}
+After=docker.service
+{% endif %}
+
+[Service]
+Type=simple
+User={{ forgejo_runner_user }}
+Group={{ forgejo_runner_group }}
+WorkingDirectory={{ forgejo_runner_home }}
+ExecStart={{ forgejo_runner_install_path }}/forgejo-runner --config {{ forgejo_runner_config_path }}/config.yml daemon
+Restart=on-failure
+RestartSec={{ forgejo_runner_service_restart_sec }}
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths={{ forgejo_runner_data_path }} {{ forgejo_runner_config_path }} {{ forgejo_runner_home }}
+
+# Environment
+Environment="HOME={{ forgejo_runner_home }}"
+Environment="USER={{ forgejo_runner_user }}"
+
+[Install]
+WantedBy=multi-user.target
