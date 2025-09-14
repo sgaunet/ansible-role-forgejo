@@ -10,3 +10,11 @@
     name: forgejo
     state: restarted
   when: forgejo_service_enabled | default(true)
+
+- name: Restart forgejo-runner service
+  ansible.builtin.systemd:
+    name: forgejo-runner
+    state: restarted
+  when:
+    - forgejo_runner_enabled | default(false)
+    - forgejo_runner_service_enabled | default(true)

@@ -126,3 +126,34 @@ forgejo_service_enabled: true  # Enable and start systemd service
 forgejo_service_description: "Forgejo (Beyond coding. We forge.)"  # Service description
 forgejo_service_restart_sec: "2s"  # Restart delay after failure
 forgejo_service_enable_capabilities: false  # Enable CAP_NET_BIND_SERVICE for low ports
+
+# Forgejo Runner configuration (optional CI/CD runner)
+forgejo_runner_enabled: false  # Enable Forgejo Runner installation and service
+forgejo_runner_version: "11.0.0"  # Runner version to install
+forgejo_runner_install_path: "/usr/local/bin"  # Installation directory for runner binary
+forgejo_runner_os: "linux"  # Operating system for runner binary
+forgejo_runner_arch: "{{ forgejo_arch }}"  # Architecture (matches Forgejo arch by default)
+
+# Runner user configuration
+forgejo_runner_user: "runner"  # Username for runner service
+forgejo_runner_group: "runner"  # Group name for runner service
+forgejo_runner_home: "/home/runner"  # Home directory for runner user
+forgejo_runner_shell: "/bin/bash"  # Shell for runner user
+
+# Runner directories
+forgejo_runner_config_path: "/etc/forgejo-runner"  # Configuration directory for runner
+forgejo_runner_data_path: "/var/lib/forgejo-runner"  # Working directory for runner data
+
+# Runner service configuration
+forgejo_runner_service_enabled: true  # Enable and start runner systemd service
+forgejo_runner_service_restart_sec: "10s"  # Restart delay after failure for runner
+
+# Runner configuration settings
+forgejo_runner_log_level: "info"  # Log level: trace, debug, info, warn, error
+forgejo_runner_capacity: 1  # Number of concurrent jobs the runner can handle
+forgejo_runner_timeout: 3600  # Job timeout in seconds (1 hour default)
+forgejo_runner_insecure: false  # Skip TLS certificate verification (not recommended for production)
+forgejo_runner_labels: []  # Labels for the runner (e.g., ["docker:docker://node:20-bookworm"])
+
+# Docker/Podman support for runner (optional)
+forgejo_runner_enable_docker: false  # Add runner user to docker group (requires Docker installed)

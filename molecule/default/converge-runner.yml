@@ -1,0 +1,12 @@
+---
+- name: Converge with Runner
+  hosts: all
+  become: true
+  vars:
+    forgejo_security_secret_key: "VerySecureSecretKeyForTestingOnly1234567890"
+    forgejo_security_internal_token: "VerySecureInternalTokenForTestingOnly1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz"
+    forgejo_runner_enabled: true
+  tasks:
+    - name: "Include sgaunet.forgejo role with runner"
+      ansible.builtin.include_role:
+        name: "sgaunet.forgejo"
