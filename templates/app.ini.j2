@@ -116,9 +116,13 @@ MODE = {{ forgejo_log_mode }}
 ROOT_PATH = {{ forgejo_data_path }}/log
 LEVEL = {{ forgejo_log_level }}
 ROUTER = {{ forgejo_log_router }}
-ENABLE_ACCESS_LOG = {{ forgejo_log_enable_access_log | lower }}
-{% if forgejo_log_enable_access_log and forgejo_log_access_log_template %}
+
+{% if forgejo_log_enable_access_log %}
+[log.logger.access]
+MODE = {{ forgejo_log_mode }}
+{% if forgejo_log_access_log_template %}
 ACCESS_LOG_TEMPLATE = {{ forgejo_log_access_log_template }}
+{% endif %}
 {% endif %}
 
 [git.timeout]
