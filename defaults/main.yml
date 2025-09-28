@@ -38,6 +38,7 @@ forgejo_server_ssh_domain: "{{ forgejo_server_domain }}"
 forgejo_server_ssh_port: 22
 forgejo_server_ssh_listen_port: 2222
 forgejo_server_lfs_start_server: true
+forgejo_server_lfs_jwt_secret: ""  # Auto-generated if empty (used for LFS JWT authentication)
 forgejo_server_enable_gzip: false
 forgejo_server_landing_page: "home"  # Options: home, explore, organizations, login
 
@@ -57,6 +58,9 @@ forgejo_security_secret_key: ""  # Auto-generated if empty (used for encryption 
 forgejo_security_internal_token: ""  # Auto-generated if empty (used for internal API calls)
 forgejo_security_min_password_length: 6  # Minimum password length
 forgejo_security_disable_git_hooks: true  # Prevent custom Git hooks for security
+
+# OAuth2 configuration
+forgejo_oauth2_jwt_secret: ""  # Auto-generated if empty (used for OAuth2 JWT authentication)
 
 # Service configuration
 forgejo_service_disable_registration: false
