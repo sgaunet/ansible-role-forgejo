@@ -2,7 +2,7 @@
 # defaults file for ansible-role-forgejo
 
 # Forgejo version and installation settings
-forgejo_target_version: "14.0.5"
+forgejo_target_version: "15.0.2"
 forgejo_install_path: "/usr/local/bin"  # Installation directory for the forgejo binary
 forgejo_os: "linux"  # Currently only linux binaries are available
 forgejo_arch: "amd64"  # Options: amd64, arm64
@@ -64,6 +64,11 @@ forgejo_security_min_password_length: 6  # Minimum password length
 forgejo_security_disable_git_hooks: true  # Prevent custom Git hooks for security
 # v13+: enforce two-factor authentication instance-wide. Options: none, all, admin
 forgejo_security_global_two_factor_requirement: "none"
+# v15+: name of the "remember me" auth cookie. v15 changed the default to a
+# brand-independent name, which forces a one-time re-login when upgrading an
+# existing instance. Set this (e.g. to your previous name) to avoid that.
+# Empty = use Forgejo's built-in default (recommended for fresh installs).
+forgejo_security_cookie_remember_name: ""
 
 # OAuth2 configuration
 forgejo_oauth2_jwt_secret: ""  # Auto-generated if empty (used for OAuth2 JWT authentication)
