@@ -27,6 +27,7 @@ This role implements the [binary installation method](https://forgejo.org/docs/l
 - Ansible >= 2.15
 - Linux system (required - Forgejo only provides Linux binaries)
 - Internet connectivity to download Forgejo releases from Codeberg
+- Git >= 2.34.1 on the target host (required by Forgejo >= 13.0)
 
 ## Role Variables
 
@@ -34,7 +35,7 @@ Available variables are listed below, along with default values (see `defaults/m
 
 ```yaml
 # Target version of Forgejo to install
-forgejo_target_version: "12.0.3"
+forgejo_target_version: "13.0.5"
 
 # Installation directory for the forgejo binary
 forgejo_install_path: "/usr/local/bin"
@@ -107,6 +108,9 @@ forgejo_server_ssh_listen_port: 2222            # Internal SSH listen port
 forgejo_security_secret_key: ""                 # Secret key for encryption
 forgejo_security_internal_token: ""             # Internal API token
 
+# v13+: enforce two-factor authentication instance-wide (none, all, admin)
+forgejo_security_global_two_factor_requirement: "none"
+
 # Service settings
 forgejo_service_disable_registration: false      # Allow new user registration
 forgejo_service_require_signin_view: false      # Require login to view content
@@ -121,6 +125,18 @@ forgejo_mailer_protocol: "sendmail"             # Protocol: sendmail or smtp
 forgejo_mailer_smtp_addr: ""                    # SMTP server address
 forgejo_mailer_smtp_port: 587                   # SMTP server port
 forgejo_mailer_from: "Forgejo <noreply@localhost>" # From address
+# v13+: read the SMTP password from a file instead of forgejo_mailer_passwd.
+# When set, it takes precedence over forgejo_mailer_passwd.
+forgejo_mailer_passwd_uri: ""                   # e.g. "file:/etc/forgejo/mailer_passwd"
+```
+
+#### Moderation Configuration (v13+)
+
+Forgejo 13 added a content reporting / abuse-report system. You can enable a cron task that periodically removes reports already resolved by administrators:
+
+```yaml
+forgejo_cron_remove_resolved_reports_enabled: false      # Enable the cleanup cron task
+forgejo_cron_remove_resolved_reports_schedule: "@every 24h"  # Cron schedule for the cleanup
 ```
 
 ### Advanced Configuration
@@ -159,7 +175,7 @@ None.
 - hosts: servers
   become: yes
   vars:
-    forgejo_target_version: "12.0.3"
+    forgejo_target_version: "13.0.5"
   roles:
     - sgaunet.forgejo
 ```
@@ -183,14 +199,14 @@ None.
 - hosts: production
   become: yes
   vars:
-    forgejo_target_version: "12.0.3"
+    forgejo_target_version: "13.0.5"
   roles:
     - sgaunet.forgejo
 
 - hosts: staging
   become: yes
   vars:
-    forgejo_target_version: "12.0.2"
+    forgejo_target_version: "13.0.4"
   roles:
     - sgaunet.forgejo
 ```
@@ -317,6 +333,8 @@ ansible-role-forgejo/
 - **Debian**: 11 (Bullseye), 12 (Bookworm)
 - **Fedora**: 38, 39, 40
 
+**Note**: Forgejo >= 13.0 requires Git >= 2.34.1 on the target host. The default Git packages on **Ubuntu 20.04 (Focal, git 2.25)** and **Debian 11 (Bullseye, git 2.30)** are older than this; on those distros a newer Git (e.g. from a backport/PPA) must be installed for Forgejo 13 to run. EL 8/9, Ubuntu 22.04+ , Debian 12, and Fedora 38-40 ship a recent enough Git.
+
 **Note**: Forgejo currently only provides Linux binaries. The `forgejo_os` variable is available for future compatibility when other operating systems are supported.
 
 ## Contributing
@@ -345,7 +363,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 2. **Download Failures**: Check your internet connectivity and firewall rules for accessing Codeberg
 
-3. **Version Not Changing**: The role compares exact version strings. Ensure `forgejo_target_version` matches the release version format (e.g., "12.0.3" not "v12.0.3")
+3. **Version Not Changing**: The role compares exact version strings. Ensure `forgejo_target_version` matches the release version format (e.g., "13.0.5" not "v13.0.5")
 
 ## License
 
