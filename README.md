@@ -35,7 +35,7 @@ Available variables are listed below, along with default values (see `defaults/m
 
 ```yaml
 # Target version of Forgejo to install
-forgejo_target_version: "14.0.5"
+forgejo_target_version: "15.0.2"
 
 # Installation directory for the forgejo binary
 forgejo_install_path: "/usr/local/bin"
@@ -114,6 +114,10 @@ forgejo_security_internal_token: ""             # Internal API token
 # v13+: enforce two-factor authentication instance-wide (none, all, admin)
 forgejo_security_global_two_factor_requirement: "none"
 
+# v15+: name of the "remember me" auth cookie. Empty = Forgejo's default.
+# Pin it (to your previous name) to avoid a one-time re-login when upgrading.
+forgejo_security_cookie_remember_name: ""
+
 # Service settings
 forgejo_service_disable_registration: false      # Allow new user registration
 forgejo_service_require_signin_view: false      # Require login to view content
@@ -178,7 +182,7 @@ None.
 - hosts: servers
   become: yes
   vars:
-    forgejo_target_version: "14.0.5"
+    forgejo_target_version: "15.0.2"
   roles:
     - sgaunet.forgejo
 ```
@@ -202,14 +206,14 @@ None.
 - hosts: production
   become: yes
   vars:
-    forgejo_target_version: "14.0.5"
+    forgejo_target_version: "15.0.2"
   roles:
     - sgaunet.forgejo
 
 - hosts: staging
   become: yes
   vars:
-    forgejo_target_version: "14.0.4"
+    forgejo_target_version: "15.0.1"
   roles:
     - sgaunet.forgejo
 ```
@@ -342,10 +346,11 @@ ansible-role-forgejo/
 
 ## Upgrade Notes
 
-When upgrading an **existing** Forgejo instance (not a fresh install), always back up first, as recommended in the [official upgrade guide](https://forgejo.org/docs/latest/admin/upgrade/). Two v14-specific points:
+When upgrading an **existing** Forgejo instance (not a fresh install), always back up first, as recommended in the [official upgrade guide](https://forgejo.org/docs/latest/admin/upgrade/). Forgejo only supports upgrading one major version at a time. Version-specific points:
 
-- **SSH `authorized_keys` validation**: on startup Forgejo validates the managed `authorized_keys` file and aborts if it contains unexpected keys. If you manually added keys, either let Forgejo regenerate the file or set `forgejo_server_ssh_allow_unexpected_authorized_keys: true`.
-- **Database foreign keys**: the v14 (v41 schema) migration adds foreign keys and may surface pre-existing data inconsistencies. If the migration errors, run `forgejo doctor check --all` to identify the affected records.
+- **v15 — brand-independent cookies**: the default "remember me" cookie name changed, so users are logged out once after upgrading. To avoid this, pin `forgejo_security_cookie_remember_name` to your previous name.
+- **v14 — SSH `authorized_keys` validation**: on startup Forgejo validates the managed `authorized_keys` file and aborts if it contains unexpected keys. If you manually added keys, either let Forgejo regenerate the file or set `forgejo_server_ssh_allow_unexpected_authorized_keys: true`.
+- **v14 — database foreign keys**: the v41 schema migration adds foreign keys and may surface pre-existing data inconsistencies. If the migration errors, run `forgejo doctor check --all` to identify the affected records.
 
 ## Contributing
 
@@ -373,7 +378,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 2. **Download Failures**: Check your internet connectivity and firewall rules for accessing Codeberg
 
-3. **Version Not Changing**: The role compares exact version strings. Ensure `forgejo_target_version` matches the release version format (e.g., "14.0.5" not "v14.0.5")
+3. **Version Not Changing**: The role compares exact version strings. Ensure `forgejo_target_version` matches the release version format (e.g., "15.0.2" not "v15.0.2")
 
 ## License
 

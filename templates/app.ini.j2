@@ -58,6 +58,9 @@ INTERNAL_TOKEN = {{ forgejo_security_internal_token }}
 MIN_PASSWORD_LENGTH = {{ forgejo_security_min_password_length }}
 DISABLE_GIT_HOOKS = {{ forgejo_security_disable_git_hooks | lower }}
 GLOBAL_TWO_FACTOR_REQUIREMENT = {{ forgejo_security_global_two_factor_requirement }}
+{% if forgejo_security_cookie_remember_name %}
+COOKIE_REMEMBER_NAME = {{ forgejo_security_cookie_remember_name }}
+{% endif %}
 
 [service]
 DISABLE_REGISTRATION = {{ forgejo_service_disable_registration | lower }}
