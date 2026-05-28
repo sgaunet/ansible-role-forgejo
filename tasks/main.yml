@@ -81,6 +81,8 @@
         group: "{{ forgejo_group }}"
         mode: "0755"
         remote_src: true
+      notify:
+        - Restart forgejo service
 
     - name: Remove temporary download directory
       ansible.builtin.file:
