@@ -42,7 +42,7 @@ devbox run -- ansible-lint .
   4. Verifies installation
 
 ### Key Variables (defaults/main.yml)
-- `forgejo_target_version`: Version to install (default: "13.0.5")
+- `forgejo_target_version`: Version to install (default: "14.0.5")
 - `forgejo_install_path`: Installation directory (default: "/usr/local/bin")
 - `forgejo_os`: OS for binary (default: "linux" - only Linux binaries available currently)
 - `forgejo_arch`: Architecture (default: "amd64", options: "amd64", "arm64")
@@ -57,7 +57,7 @@ devbox run -- ansible-lint .
 
 1. **Path Issues**: Always use full paths (`{{ forgejo_install_path }}/forgejo`) in commands since PATH may not be set correctly during Ansible execution
 
-2. **Version Comparison**: The role compares exact version strings. The downloaded version has "v" prefix (e.g., "v13.0.5") which is stripped for comparison
+2. **Version Comparison**: The role compares exact version strings. The downloaded version has "v" prefix (e.g., "v14.0.5") which is stripped for comparison
 
 3. **Conditional Logic**: Uses `("v" + forgejo_target_version)` syntax to avoid Jinja2 templating warnings in conditionals
 
