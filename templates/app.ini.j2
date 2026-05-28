@@ -56,6 +56,7 @@ SECRET_KEY = {{ forgejo_security_secret_key }}
 INTERNAL_TOKEN = {{ forgejo_security_internal_token }}
 MIN_PASSWORD_LENGTH = {{ forgejo_security_min_password_length }}
 DISABLE_GIT_HOOKS = {{ forgejo_security_disable_git_hooks | lower }}
+GLOBAL_TWO_FACTOR_REQUIREMENT = {{ forgejo_security_global_two_factor_requirement }}
 
 [service]
 DISABLE_REGISTRATION = {{ forgejo_service_disable_registration | lower }}
@@ -78,7 +79,11 @@ PROTOCOL = {{ forgejo_mailer_protocol }}
 SMTP_ADDR = {{ forgejo_mailer_smtp_addr }}
 SMTP_PORT = {{ forgejo_mailer_smtp_port }}
 USER = {{ forgejo_mailer_user }}
+{% if forgejo_mailer_passwd_uri %}
+PASSWD_URI = {{ forgejo_mailer_passwd_uri }}
+{% else %}
 PASSWD = {{ forgejo_mailer_passwd }}
+{% endif %}
 {% endif %}
 FROM = {{ forgejo_mailer_from }}
 {% endif %}
@@ -120,7 +125,7 @@ MAX_FILES = {{ forgejo_attachment_max_files }}
 MODE = {{ forgejo_log_mode }}
 ROOT_PATH = {{ forgejo_data_path }}/log
 LEVEL = {{ forgejo_log_level }}
-logger.router.MODE = {{ forgejo_log_router }}
+LOGGER_ROUTER_MODE = {{ forgejo_log_router }}
 
 {% if forgejo_log_enable_access_log %}
 [log.logger.access]
@@ -139,4 +144,8 @@ PULL = {{ forgejo_git_timeout_pull }}
 GC = {{ forgejo_git_timeout_gc }}
 
 [oauth2]
-JWT_SECRET = {{ forgejo_oauth2_jwt_secret }} 
+JWT_SECRET = {{ forgejo_oauth2_jwt_secret }}
+
+[cron.remove_resolved_reports]
+ENABLED = {{ forgejo_cron_remove_resolved_reports_enabled | lower }}
+SCHEDULE = {{ forgejo_cron_remove_resolved_reports_schedule }}

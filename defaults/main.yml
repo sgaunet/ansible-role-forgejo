@@ -2,7 +2,7 @@
 # defaults file for ansible-role-forgejo
 
 # Forgejo version and installation settings
-forgejo_target_version: "12.0.3"
+forgejo_target_version: "13.0.5"
 forgejo_install_path: "/usr/local/bin"  # Installation directory for the forgejo binary
 forgejo_os: "linux"  # Currently only linux binaries are available
 forgejo_arch: "amd64"  # Options: amd64, arm64
@@ -59,9 +59,16 @@ forgejo_security_secret_key: ""  # Auto-generated if empty (used for encryption 
 forgejo_security_internal_token: ""  # Auto-generated if empty (used for internal API calls)
 forgejo_security_min_password_length: 6  # Minimum password length
 forgejo_security_disable_git_hooks: true  # Prevent custom Git hooks for security
+# v13+: enforce two-factor authentication instance-wide. Options: none, all, admin
+forgejo_security_global_two_factor_requirement: "none"
 
 # OAuth2 configuration
 forgejo_oauth2_jwt_secret: ""  # Auto-generated if empty (used for OAuth2 JWT authentication)
+
+# Moderation configuration (v13+: content reporting / abuse reports)
+# Periodically remove abuse reports that have already been resolved by administrators
+forgejo_cron_remove_resolved_reports_enabled: false  # Enable the cleanup cron task
+forgejo_cron_remove_resolved_reports_schedule: "@every 24h"  # Cron schedule for the cleanup
 
 # Service configuration
 forgejo_service_disable_registration: false
@@ -82,6 +89,9 @@ forgejo_mailer_smtp_addr: ""
 forgejo_mailer_smtp_port: 587
 forgejo_mailer_user: ""
 forgejo_mailer_passwd: ""
+# v13+: read the SMTP password from a file instead of forgejo_mailer_passwd.
+# When set (e.g. "file:/etc/forgejo/mailer_passwd") it takes precedence over forgejo_mailer_passwd.
+forgejo_mailer_passwd_uri: ""
 forgejo_mailer_from: "Forgejo <noreply@{{ forgejo_server_domain }}>"
 
 # Cache configuration
