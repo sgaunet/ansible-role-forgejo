@@ -30,6 +30,7 @@ START_SSH_SERVER = {{ (not forgejo_server_disable_ssh) | lower }}
 SSH_DOMAIN = {{ forgejo_server_ssh_domain }}
 SSH_PORT = {{ forgejo_server_ssh_port }}
 SSH_LISTEN_PORT = {{ forgejo_server_ssh_listen_port }}
+SSH_ALLOW_UNEXPECTED_AUTHORIZED_KEYS = {{ forgejo_server_ssh_allow_unexpected_authorized_keys | lower }}
 OFFLINE_MODE = false
 {% endif %}
 LFS_START_SERVER = {{ forgejo_server_lfs_start_server | lower }}

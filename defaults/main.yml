@@ -2,7 +2,7 @@
 # defaults file for ansible-role-forgejo
 
 # Forgejo version and installation settings
-forgejo_target_version: "13.0.5"
+forgejo_target_version: "14.0.5"
 forgejo_install_path: "/usr/local/bin"  # Installation directory for the forgejo binary
 forgejo_os: "linux"  # Currently only linux binaries are available
 forgejo_arch: "amd64"  # Options: amd64, arm64
@@ -37,6 +37,9 @@ forgejo_server_disable_ssh: false
 forgejo_server_ssh_domain: "{{ forgejo_server_domain }}"
 forgejo_server_ssh_port: 22
 forgejo_server_ssh_listen_port: 2222
+# v14+: allow unexpected keys in the managed SSH authorized_keys file instead of
+# aborting startup. Leave false unless migrating an instance with hand-added keys.
+forgejo_server_ssh_allow_unexpected_authorized_keys: false
 forgejo_server_lfs_start_server: true
 forgejo_server_lfs_jwt_secret: ""  # Auto-generated if empty (used for LFS JWT authentication)
 forgejo_server_enable_gzip: false
