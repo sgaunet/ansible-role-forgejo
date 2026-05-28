@@ -49,6 +49,7 @@ forgejo_repository_default_branch: "main"  # Default branch name for new reposit
 forgejo_repository_disable_http_git: false  # Disable HTTP Git protocol
 forgejo_repository_upload_file_max_size: 4095  # Max file size in MB
 forgejo_repository_upload_max_files: 20
+forgejo_repository_enable_push_create_user: false  # Allow users to create repositories by pushing to non-existent repo
 
 # Security configuration
 forgejo_security_install_lock: true  # Disable installer after setup
