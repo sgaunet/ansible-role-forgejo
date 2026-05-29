@@ -152,10 +152,13 @@ forgejo_service_enable_capabilities: false  # Enable CAP_NET_BIND_SERVICE for lo
 
 # Forgejo Runner configuration (optional CI/CD runner)
 forgejo_runner_enabled: false  # Enable Forgejo Runner installation and service
-forgejo_runner_version: "11.0.0"  # Runner version to install
+forgejo_runner_version: "12.10.2"  # Runner version to install
 forgejo_runner_install_path: "/usr/local/bin"  # Installation directory for runner binary
 forgejo_runner_os: "linux"  # Operating system for runner binary
 forgejo_runner_arch: "{{ forgejo_arch }}"  # Architecture (matches Forgejo arch by default)
+# Runner v12+ requires a git binary on the host (used for checkout / remote actions via git
+# worktrees). The role installs git when the runner is enabled; set to false to manage it yourself.
+forgejo_runner_install_git: true
 
 # Runner user configuration
 forgejo_runner_user: "runner"  # Username for runner service
@@ -177,6 +180,17 @@ forgejo_runner_capacity: 1  # Number of concurrent jobs the runner can handle
 forgejo_runner_timeout: 3600  # Job timeout in seconds (1 hour default)
 forgejo_runner_insecure: false  # Skip TLS certificate verification (not recommended for production)
 forgejo_runner_labels: []  # Labels for the runner (e.g., ["docker:docker://node:20-bookworm"])
+forgejo_runner_runner_file: "{{ forgejo_runner_data_path }}/.runner"  # Registration state file
+
+# Runner connection / registration (Forgejo Runner v12 model)
+# The deprecated `register` command is no longer used; the connection to a Forgejo instance is
+# declared directly in config.yml under server.connections. Obtain the token (and uuid) from the
+# Forgejo UI runners page (admin: /admin/actions/runners, org/user/repo settings -> Actions ->
+# Runners). The server.connections block is only rendered when both URL and token are provided.
+forgejo_runner_instance_url: ""  # e.g. "https://forge.example.com/"
+forgejo_runner_registration_token: ""  # Registration token (store via Ansible Vault)
+forgejo_runner_uuid: ""  # Optional runner UUID shown alongside the token in the UI
+forgejo_runner_connection_name: "forgejo"  # Key used under server.connections
 
 # Docker/Podman support for runner (optional)
 forgejo_runner_enable_docker: false  # Add runner user to docker group (requires Docker installed)

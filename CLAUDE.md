@@ -46,6 +46,13 @@ devbox run -- ansible-lint .
 - `forgejo_install_path`: Installation directory (default: "/usr/local/bin")
 - `forgejo_os`: OS for binary (default: "linux" - only Linux binaries available currently)
 - `forgejo_arch`: Architecture (default: "amd64", options: "amd64", "arm64")
+- `forgejo_runner_version`: Optional CI/CD runner version (default: "12.10.2")
+
+### Forgejo Runner (tasks/runner.yml, optional via `forgejo_runner_enabled`)
+- Runner **v12+ requires git on the host**; the role installs it when `forgejo_runner_install_git` is true.
+- v12 deprecated the `register` command: the connection is declared in a managed `config.yml` (templates/config.yml.j2) under `server.connections`, rendered only when `forgejo_runner_instance_url` and `forgejo_runner_registration_token` are both set.
+- Runner binary download URL uses `code.forgejo.org` (not `codeberg.org`):
+  `https://code.forgejo.org/forgejo/runner/releases/download/v{{ forgejo_runner_version }}/forgejo-runner-{{ forgejo_runner_version }}-{{ forgejo_runner_os }}-{{ forgejo_runner_arch }}`
 
 ### Testing Strategy
 - Uses Molecule with Docker driver

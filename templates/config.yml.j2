@@ -1,0 +1,27 @@
+# {{ ansible_managed }}
+# Forgejo Runner configuration managed by the sgaunet.forgejo Ansible role.
+# Only the keys managed by the role are listed here; any option left out falls back to the
+# runner's built-in default. See the upstream config.example.yaml for the full reference:
+# https://code.forgejo.org/forgejo/runner/src/branch/main/internal/pkg/config/config.example.yaml
+---
+log:
+  level: {{ forgejo_runner_log_level }}
+
+runner:
+  file: {{ forgejo_runner_runner_file }}
+  capacity: {{ forgejo_runner_capacity }}
+  timeout: {{ forgejo_runner_timeout }}s
+  insecure: {{ forgejo_runner_insecure | lower }}
+  labels: {{ forgejo_runner_labels | to_json }}
+{% if forgejo_runner_instance_url and forgejo_runner_registration_token %}
+
+# Connection to the Forgejo instance (v12 replaces the deprecated `register` command).
+server:
+  connections:
+    {{ forgejo_runner_connection_name }}:
+      url: {{ forgejo_runner_instance_url }}
+{% if forgejo_runner_uuid %}
+      uuid: {{ forgejo_runner_uuid }}
+{% endif %}
+      token: {{ forgejo_runner_registration_token }}
+{% endif %}
