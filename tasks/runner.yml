@@ -27,6 +27,14 @@
     - forgejo_runner_enable_docker | bool
     - ansible_facts.getent_group.docker is defined
 
+# Forgejo Runner v12+ requires a git binary on the host (checkout / remote actions use git
+# worktrees). The role does not otherwise install git, so install it here when enabled.
+- name: Install git for Forgejo Runner (required by runner v12+)
+  ansible.builtin.package:
+    name: git
+    state: present
+  when: forgejo_runner_install_git | bool
+
 - name: Create runner configuration directory
   ansible.builtin.file:
     path: "{{ forgejo_runner_config_path }}"
@@ -102,79 +110,16 @@
       ansible.builtin.debug:
         msg: "Forgejo Runner installed: {{ forgejo_runner_verify.stdout }}"
 
-- name: Check if runner config exists
-  ansible.builtin.stat:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
-  register: runner_config_stat
-
-- name: Create runner home .ansible/tmp directory
-  ansible.builtin.file:
-    path: "{{ forgejo_runner_home }}/.ansible/tmp"
-    state: directory
-    owner: "{{ forgejo_runner_user }}"
-    group: "{{ forgejo_runner_group }}"
-    mode: '0700'
-  when: not runner_config_stat.stat.exists
-
-- name: Generate default runner configuration
-  ansible.builtin.shell: |
-    {{ forgejo_runner_install_path }}/forgejo-runner generate-config > {{ forgejo_runner_config_path }}/config.yml
-  args:
-    creates: "{{ forgejo_runner_config_path }}/config.yml"
-  become: true
-  become_user: "{{ forgejo_runner_user }}"
-  when: not runner_config_stat.stat.exists
-
-- name: Check if runner config exists after generation
-  ansible.builtin.stat:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
-  register: runner_config_final_stat
-
-- name: Set runner configuration file permissions
-  ansible.builtin.file:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
+# config.yml is fully managed by the role via a template (idempotent and able to express the
+# nested server.connections block introduced in runner v12). This replaces the older
+# `generate-config` + lineinfile approach.
+- name: Deploy Forgejo Runner configuration
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ forgejo_runner_config_path }}/config.yml"
     owner: "{{ forgejo_runner_user }}"
     group: "{{ forgejo_runner_group }}"
     mode: '0640'
-  when: runner_config_final_stat.stat.exists
-
-- name: Update runner log level in configuration
-  ansible.builtin.lineinfile:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
-    regexp: '^(\s*)level:'
-    line: '  level: {{ forgejo_runner_log_level }}'
-    backup: true
-  when: runner_config_final_stat.stat.exists
-  notify:
-    - Restart forgejo-runner service
-
-- name: Update runner capacity in configuration
-  ansible.builtin.lineinfile:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
-    regexp: '^(\s*)capacity:'
-    line: '  capacity: {{ forgejo_runner_capacity }}'
-    backup: true
-  when: runner_config_final_stat.stat.exists
-  notify:
-    - Restart forgejo-runner service
-
-- name: Update runner timeout in configuration
-  ansible.builtin.lineinfile:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
-    regexp: '^(\s*)timeout:'
-    line: '  timeout: {{ forgejo_runner_timeout }}s'
-    backup: true
-  when: runner_config_final_stat.stat.exists
-  notify:
-    - Restart forgejo-runner service
-
-- name: Update runner insecure setting in configuration
-  ansible.builtin.lineinfile:
-    path: "{{ forgejo_runner_config_path }}/config.yml"
-    regexp: '^(\s*)insecure:'
-    line: '  insecure: {{ forgejo_runner_insecure | lower }}'
-    backup: true
-  when: runner_config_final_stat.stat.exists
   notify:
     - Restart forgejo-runner service
 

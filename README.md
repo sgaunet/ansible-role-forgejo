@@ -19,6 +19,7 @@ This role implements the [binary installation method](https://forgejo.org/docs/l
 - Sets up systemd service with proper configuration and dependencies
 - Version management with automatic upgrades/downgrades
 - Idempotent installation (only downloads when version differs)
+- Optional Forgejo Runner (CI/CD) install with config-based registration (v12 model)
 - Support for multiple Linux distributions
 - Comprehensive molecule tests
 
@@ -157,6 +158,51 @@ forgejo_os: "linux"
 
 # Architecture (default: amd64, options: amd64, arm64)
 forgejo_arch: "amd64"
+```
+
+### Forgejo Runner (CI/CD)
+
+The role can optionally install and configure the [Forgejo Runner](https://forgejo.org/docs/latest/admin/actions/) (Forgejo Actions). It is disabled by default. When enabled, the role installs the runner binary, creates a dedicated `runner` user, deploys a managed `config.yml`, and sets up a hardened systemd service.
+
+> **Runner v12+ requires `git` on the host** (used by `checkout` and remote actions via git worktrees). The role installs git automatically when the runner is enabled (`forgejo_runner_install_git: true`).
+
+Forgejo Runner v12 also replaces the deprecated `register` command: the connection to a Forgejo instance is declared directly in `config.yml` under `server.connections`. Obtain a registration token (and UUID) from the Forgejo UI (admin: `/admin/actions/runners`, or an org/user/repo's *Settings → Actions → Runners*) and pass it to the role. The connection block is only written when both URL and token are provided.
+
+```yaml
+# Forgejo Runner configuration (optional CI/CD runner)
+forgejo_runner_enabled: false           # Enable runner installation and service
+forgejo_runner_version: "12.10.2"       # Runner version to install
+forgejo_runner_install_git: true        # Install git (required by runner v12+)
+
+# Connection / registration (v12 model — declared in config.yml, no `register` command)
+forgejo_runner_instance_url: ""         # e.g. "https://forge.example.com/"
+forgejo_runner_registration_token: ""   # Token from the Forgejo UI (store via Ansible Vault)
+forgejo_runner_uuid: ""                 # Optional runner UUID shown alongside the token
+forgejo_runner_connection_name: "forgejo"  # Key used under server.connections
+
+# Runner behaviour
+forgejo_runner_log_level: "info"        # trace, debug, info, warn, error
+forgejo_runner_capacity: 1              # Concurrent jobs
+forgejo_runner_timeout: 3600           # Job timeout in seconds
+forgejo_runner_insecure: false          # Skip TLS verification (not recommended)
+forgejo_runner_labels: []               # e.g. ["docker:docker://node:20-bookworm"]
+forgejo_runner_enable_docker: false     # Add runner user to the docker group
+```
+
+Example enabling a registered runner:
+
+```yaml
+---
+- hosts: ci
+  become: true
+  vars:
+    forgejo_runner_enabled: true
+    forgejo_runner_instance_url: "https://forge.example.com/"
+    forgejo_runner_registration_token: "{{ vault_forgejo_runner_token }}"
+    forgejo_runner_labels:
+      - "docker:docker://node:20-bookworm"
+  roles:
+    - sgaunet.forgejo
 ```
 
 ## Dependencies

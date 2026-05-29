@@ -35,6 +35,25 @@
       changed_when: false
       failed_when: runner_user_check.rc != 0
 
+    - name: Check git is installed (required by runner v12+)
+      ansible.builtin.command: git --version
+      register: git_check
+      changed_when: false
+      failed_when: git_check.rc != 0
+
+    - name: Get installed forgejo-runner version
+      ansible.builtin.command: >-
+        {{ forgejo_runner_install_path | default('/usr/local/bin') }}/forgejo-runner --version
+      register: runner_version_check
+      changed_when: false
+
+    - name: Verify forgejo-runner is the expected major version (v12)
+      ansible.builtin.assert:
+        that:
+          - "'v12.' in runner_version_check.stdout"
+        fail_msg: "forgejo-runner is not a v12 release: {{ runner_version_check.stdout }}"
+        success_msg: "forgejo-runner v12 is installed"
+
     - name: Stat runner configuration directory
       ansible.builtin.stat:
         path: "{{ forgejo_runner_config_path | default('/etc/forgejo-runner') }}"
@@ -59,6 +78,19 @@
           - runner_config_file.stat.exists
         fail_msg: "Runner configuration file not created"
         success_msg: "Runner configuration file exists"
+
+    - name: Read runner configuration file
+      ansible.builtin.slurp:
+        src: "{{ forgejo_runner_config_path | default('/etc/forgejo-runner') }}/config.yml"
+      register: runner_config_content
+
+    - name: Verify runner configuration is role-managed and contains the connection
+      ansible.builtin.assert:
+        that:
+          - "'managed by the sgaunet.forgejo Ansible role' in (runner_config_content.content | b64decode)"
+          - "'connections:' in (runner_config_content.content | b64decode)"
+        fail_msg: "Runner config.yml is not the expected managed template"
+        success_msg: "Runner config.yml is managed and declares a server connection"
 
     - name: Check forgejo-runner service file exists
       ansible.builtin.stat:
