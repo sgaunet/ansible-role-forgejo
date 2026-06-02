@@ -127,10 +127,3 @@
     state: "{{ 'started' if forgejo_service_enabled else 'stopped' }}"
     daemon_reload: true
   when: forgejo_service_enabled is defined
-
-- name: Import Forgejo Runner tasks when enabled
-  ansible.builtin.import_tasks: runner.yml
-  when:
-    - forgejo_runner_enabled | bool
-  tags:
-    - always

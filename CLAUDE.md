@@ -46,14 +46,9 @@ devbox run -- ansible-lint .
 - `forgejo_install_path`: Installation directory (default: "/usr/local/bin")
 - `forgejo_os`: OS for binary (default: "linux" - only Linux binaries available currently)
 - `forgejo_arch`: Architecture (default: "amd64", options: "amd64", "arm64")
-- `forgejo_runner_version`: Optional CI/CD runner version (default: "12.10.2")
 
-### Forgejo Runner (tasks/runner.yml, optional via `forgejo_runner_enabled`)
-- Runner **v12+ requires git on the host**; the role installs it when `forgejo_runner_install_git` is true.
-- v12 deprecated the `register` command: the connection is declared in a managed `config.yml` (templates/config.yml.j2) under `server.connections`, rendered only when `forgejo_runner_instance_url` plus a token (`forgejo_runner_registration_token` or `forgejo_runner_token_url`) are set.
-- `config.yml.j2` exposes **every** runner config key (log/runner/cache/container/host/server) via per-key `forgejo_runner_*` vars, plus a deep-merged `forgejo_runner_extra_config` escape hatch. The template builds a dict and renders it with `to_nice_yaml`; keys whose variable is empty (`""`/`[]`/`{}`) are omitted so the runner uses its own default (empty string is the "unset" sentinel, giving booleans a tri-state).
-- Runner binary download URL uses `code.forgejo.org` (not `codeberg.org`):
-  `https://code.forgejo.org/forgejo/runner/releases/download/v{{ forgejo_runner_version }}/forgejo-runner-{{ forgejo_runner_version }}-{{ forgejo_runner_os }}-{{ forgejo_runner_arch }}`
+### Forgejo Runner — split into a separate role
+The Forgejo Runner (CI/CD) is no longer part of this role. It now lives in **`sgaunet.forgejo_runner`** (https://github.com/sgaunet/ansible-role-forgejo-runner). This role installs and configures the Forgejo **server** only.
 
 ### Testing Strategy
 - Uses Molecule with Docker driver

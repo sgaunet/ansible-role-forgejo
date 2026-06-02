@@ -19,7 +19,7 @@ This role implements the [binary installation method](https://forgejo.org/docs/l
 - Sets up systemd service with proper configuration and dependencies
 - Version management with automatic upgrades/downgrades
 - Idempotent installation (only downloads when version differs)
-- Optional Forgejo Runner (CI/CD) install with config-based registration (v12 model)
+- Forgejo Runner (CI/CD) available as a separate role: [`sgaunet.forgejo_runner`](https://github.com/sgaunet/ansible-role-forgejo-runner)
 - Support for multiple Linux distributions
 - Comprehensive molecule tests
 
@@ -162,95 +162,28 @@ forgejo_arch: "amd64"
 
 ### Forgejo Runner (CI/CD)
 
-The role can optionally install and configure the [Forgejo Runner](https://forgejo.org/docs/latest/admin/actions/) (Forgejo Actions). It is disabled by default. When enabled, the role installs the runner binary, creates a dedicated `runner` user, deploys a managed `config.yml`, and sets up a hardened systemd service.
+The Forgejo Runner has been split into its own role:
+**[`sgaunet.forgejo_runner`](https://github.com/sgaunet/ansible-role-forgejo-runner)**
+(Ansible Galaxy: `sgaunet.forgejo_runner`). This role now installs the Forgejo **server** only.
 
-> **Runner v12+ requires `git` on the host** (used by `checkout` and remote actions via git worktrees). The role installs git automatically when the runner is enabled (`forgejo_runner_install_git: true`).
-
-Forgejo Runner v12 also replaces the deprecated `register` command: the connection to a Forgejo instance is declared directly in `config.yml` under `server.connections`. Obtain a registration token (and UUID) from the Forgejo UI (admin: `/admin/actions/runners`, or an org/user/repo's *Settings → Actions → Runners*) and pass it to the role. The connection block is only written when the URL plus a token (or `token_url`) are provided.
-
-The role can set **every** key the runner supports. Each option below has a `forgejo_runner_*` variable; any variable left empty (`""`, `[]`, `{}`) is **omitted** from `config.yml`, so the runner falls back to its own built-in default. For options not modelled by a dedicated variable — including future upstream keys — use the free-form `forgejo_runner_extra_config` dict, which is deep-merged on top.
-
-```yaml
-# Forgejo Runner configuration (optional CI/CD runner)
-forgejo_runner_enabled: false           # Enable runner installation and service
-forgejo_runner_version: "12.10.2"       # Runner version to install
-forgejo_runner_install_git: true        # Install git (required by runner v12+)
-
-# Connection / registration (v12 model — declared in config.yml, no `register` command)
-forgejo_runner_instance_url: ""         # e.g. "https://forge.example.com/"
-forgejo_runner_registration_token: ""   # Token from the Forgejo UI (store via Ansible Vault)
-forgejo_runner_token_url: ""            # Alternative: file URL for the token, e.g. "file:$CREDENTIALS_DIRECTORY/token.txt"
-forgejo_runner_uuid: ""                 # Optional runner UUID shown alongside the token
-forgejo_runner_connection_name: "forgejo"  # Key used under server.connections
-forgejo_runner_connection_labels: []    # Connection-specific labels (overrides runner.labels)
-forgejo_runner_connection_fetch_interval: ""  # Per-connection job fetch interval, e.g. "5s"
-
-# log
-forgejo_runner_log_level: "info"        # Process log level: trace, debug, info, warn, error, fatal
-forgejo_runner_log_job_level: ""        # Log level for logs sent to Forgejo (default: log level)
-
-# runner
-forgejo_runner_capacity: 1              # Concurrent jobs
-forgejo_runner_timeout: 3600            # Job timeout in seconds (role appends the "s" unit)
-forgejo_runner_insecure: false          # Skip TLS verification (not recommended)
-forgejo_runner_labels: []               # e.g. ["docker:docker://node:20-bookworm"]
-forgejo_runner_envs: {}                 # Extra job env vars, e.g. {KEY: value}
-forgejo_runner_env_file: ""             # Path to a job env file (ignored if missing)
-forgejo_runner_shutdown_timeout: ""     # Grace period for jobs on shutdown, e.g. "3h"
-forgejo_runner_fetch_timeout: ""        # Job fetch timeout, e.g. "5s"
-forgejo_runner_fetch_interval: ""       # Job fetch interval, e.g. "2s"
-forgejo_runner_report_interval: ""      # Status/log report interval, e.g. "1s"
-forgejo_runner_report_retry_max_retries: ""    # Max retries when reporting logs (int)
-forgejo_runner_report_retry_initial_delay: ""  # Initial retry delay, e.g. "100ms"
-forgejo_runner_report_retry_max_delay: ""      # Max retry delay, e.g. "5s"
-
-# cache (internal actions/cache server; upstream default for enabled is true)
-forgejo_runner_cache_enabled: ""        # true/false (empty = runner default, true)
-forgejo_runner_cache_dir: ""            # Cache data dir (empty = $HOME/.cache/actcache)
-forgejo_runner_cache_host: ""           # Host advertised to job containers (empty = auto)
-forgejo_runner_cache_port: ""           # Cache server port (int; 0 = random)
-forgejo_runner_cache_proxy_port: ""     # Cache proxy port (int; 0 = random)
-forgejo_runner_cache_external_server: ""  # External cache server URL (disables internal server)
-forgejo_runner_cache_actions_cache_url_override: ""  # Manual ACTIONS_CACHE_URL for containers
-forgejo_runner_cache_secret: ""         # Cache proxy auth secret (store via Ansible Vault)
-forgejo_runner_cache_secret_url: ""     # File URL for the cache secret (mutually exclusive)
-
-# container (Docker/Podman execution)
-forgejo_runner_container_network: ""    # host, bridge, custom name, or "" to auto-create
-forgejo_runner_container_network_mode: ""  # Deprecated alias of network
-forgejo_runner_container_enable_ipv6: ""   # true/false: IPv6 on auto-created networks
-forgejo_runner_container_privileged: ""    # true/false: privileged (required for Docker-in-Docker)
-forgejo_runner_container_options: ""    # Extra docker run options
-forgejo_runner_container_workdir_parent: ""  # Job workdir parent (empty = /workspace)
-forgejo_runner_container_valid_volumes: []   # Allowed volume globs, e.g. ['**']
-forgejo_runner_container_docker_host: ""     # Override docker host ("-" = auto, don't mount socket)
-forgejo_runner_container_force_pull: ""      # true/false: always pull images
-forgejo_runner_container_force_rebuild: ""   # true/false: always rebuild local images
-
-# host (host execution, for "<label>:host" runners)
-forgejo_runner_host_workdir_parent: ""  # Job workdir parent (empty = $HOME/.cache/act/)
-
-# Escape hatch — deep-merged on top of everything above (set any/future key here)
-forgejo_runner_extra_config: {}
-
-forgejo_runner_enable_docker: false     # Add runner user to the docker group
-```
-
-Example enabling a registered runner:
+The runner is a standalone role that connects to any Forgejo instance over the network, so it
+does not need to run on the same host as the server. Use it like this:
 
 ```yaml
 ---
 - hosts: ci
   become: true
   vars:
-    forgejo_runner_enabled: true
     forgejo_runner_instance_url: "https://forge.example.com/"
     forgejo_runner_registration_token: "{{ vault_forgejo_runner_token }}"
     forgejo_runner_labels:
       - "docker:docker://node:20-bookworm"
   roles:
-    - sgaunet.forgejo
+    - sgaunet.forgejo_runner
 ```
+
+See the [runner role's README](https://github.com/sgaunet/ansible-role-forgejo-runner) for the full
+variable reference.
 
 ## Dependencies
 
