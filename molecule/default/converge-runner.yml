@@ -13,6 +13,20 @@
     forgejo_runner_uuid: "00000000-0000-0000-0000-000000000000"
     forgejo_runner_labels:
       - "docker:docker://node:20-bookworm"
+    # Exercise a representative sample of the per-key variables across every config section.
+    forgejo_runner_log_job_level: "warn"
+    forgejo_runner_fetch_interval: "5s"
+    forgejo_runner_envs:
+      A_TEST_ENV: "a_test_value"
+    forgejo_runner_cache_enabled: true
+    forgejo_runner_container_privileged: true
+    forgejo_runner_container_valid_volumes:
+      - "**"
+    # extra_config is deep-merged: it adds container.options *alongside* container.privileged
+    # (set above), which proves the merge is recursive rather than a whole-section replace.
+    forgejo_runner_extra_config:
+      container:
+        options: "--cpus=2"
   tasks:
     - name: "Include sgaunet.forgejo role with runner"
       ansible.builtin.include_role:
