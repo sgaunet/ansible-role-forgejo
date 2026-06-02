@@ -92,6 +92,32 @@
         fail_msg: "Runner config.yml is not the expected managed template"
         success_msg: "Runner config.yml is managed and declares a server connection"
 
+    - name: Parse runner configuration as YAML
+      ansible.builtin.set_fact:
+        runner_config_parsed: "{{ runner_config_content.content | b64decode | from_yaml }}"
+
+    - name: Verify runner config.yml is valid YAML and renders all sections
+      ansible.builtin.assert:
+        that:
+          # Core keys (always rendered)
+          - runner_config_parsed.log.level == "info"
+          - runner_config_parsed.runner.capacity == 1
+          # Per-key variables across the previously-unsupported sections
+          - runner_config_parsed.log.job_level == "warn"
+          - runner_config_parsed.runner.fetch_interval == "5s"
+          - runner_config_parsed.runner.envs.A_TEST_ENV == "a_test_value"
+          - runner_config_parsed.cache.enabled | bool
+          - runner_config_parsed.container.privileged | bool
+          - "'**' in runner_config_parsed.container.valid_volumes"
+          # container.options comes from forgejo_runner_extra_config and must sit *next to*
+          # container.privileged (a per-key var) — proving the deep-merge is recursive.
+          - runner_config_parsed.container.options == "--cpus=2"
+          # Connection block still renders correctly
+          - runner_config_parsed.server.connections.forgejo.url == "http://localhost:3000/"
+          - runner_config_parsed.server.connections.forgejo.token is defined
+        fail_msg: "Runner config.yml is missing expected keys (per-key vars or extra_config deep-merge)"
+        success_msg: "Runner config.yml renders all sections, including the extra_config deep-merge"
+
     - name: Check forgejo-runner service file exists
       ansible.builtin.stat:
         path: /etc/systemd/system/forgejo-runner.service
