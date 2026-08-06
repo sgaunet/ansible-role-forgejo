@@ -1,0 +1,34 @@
+[tools]
+python = "3.12"
+uv = "latest"
+task = "3.40.0"
+
+[env]
+# mise creates/activates the venv and puts .venv/bin first on PATH, so molecule,
+# ansible-playbook, ansible-lint and the docker driver all share one interpreter.
+_.python.venv = { path = ".venv", create = true }
+# Keep collections project-local instead of polluting ~/.ansible.
+ANSIBLE_COLLECTIONS_PATH = "{{config_root}}/.ansible/collections"
+
+[tasks.deps]
+description = "Provision .venv (Python) + Ansible collections"
+# ansible-core does not bundle collections the way the full ansible package does,
+# so install them explicitly: community.docker + ansible.posix back the molecule
+# docker driver used by molecule/default/molecule.yml.
+# Versions mirror the devbox pins this project previously used.
+run = [
+  "uv pip install ansible-core==2.17.6 ansible-compat==24.9.1 molecule==24.12.0 'molecule-plugins[docker]==23.5.3' docker==7.1.0 jmespath==1.0.1 ansible-lint==24.7.0",
+  'ansible-galaxy collection install -p "$ANSIBLE_COLLECTIONS_PATH" community.docker:==5.2.1 ansible.posix:==2.2.0',
+]
+sources = ["mise.toml"]
+outputs = { auto = true }
+
+[tasks.lint]
+description = "Run ansible-lint"
+depends = ["deps"]
+run = "task lint"
+
+[tasks.molecule-test]
+description = "Run the molecule test scenario"
+depends = ["deps"]
+run = "task tests"

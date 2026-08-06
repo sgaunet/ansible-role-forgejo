@@ -3,8 +3,6 @@ name: CI
 'on':
   pull_request:
   push:
-  schedule:
-    - cron: "0 2 * * 0"
 
 jobs:
   lint:
@@ -14,14 +12,12 @@ jobs:
       - name: Check out the codebase
         uses: actions/checkout@v4
 
-      - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.11.0
-        with:
-          enable-cache: true
+      - name: Install mise
+        uses: jdx/mise-action@v4
 
       - name: Run ansible-lint
         run: |
-          devbox run -- ansible-lint .
+          mise run lint
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
@@ -39,14 +35,12 @@ jobs:
   #     - name: Check out the codebase
   #       uses: actions/checkout@v4
 
-  #     - name: Install devbox
-  #       uses: jetify-com/devbox-install-action@v0.11.0
-  #       with:
-  #         enable-cache: true
+  #     - name: Install mise
+  #       uses: jdx/mise-action@v4
 
   #     - name: Run Molecule tests
   #       run: |
-  #         devbox run -- molecule test
+  #         mise run molecule-test
   #       env:
   #         PY_COLORS: '1'
   #         ANSIBLE_FORCE_COLOR: '1'

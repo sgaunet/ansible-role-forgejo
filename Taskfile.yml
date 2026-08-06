@@ -12,9 +12,9 @@ tasks:
     desc: "execute linter"
     cmds:
       # - ansible-lint *.yml --skip-list name[template],meta-no-info,yaml[line-length],package-latest,latest[git]
-      - devbox run -- ansible-lint .
+      - ansible-lint .
 
   tests:
     desc: "execute molecule tests"
     cmds:
-      - devbox run -- molecule test
+      - molecule test
