@@ -9,27 +9,30 @@ This is an Ansible role that installs the Forgejo binary on Linux systems. Forge
 ## Key Commands
 
 ```bash
-# Run tests (requires Docker)
-task tests
+# Provision the toolchain: .venv (via uv) + Ansible collections
+mise run deps
 
-# Run linter
-task linter
+# Run linter (provisions deps first)
+mise run lint
+
+# Run molecule tests, requires Docker (provisions deps first)
+mise run molecule-test
+
+# The mise tasks above wrap these Taskfile targets
+task lint
+task tests
 
 # List all available tasks
 task
 
-# Run tests directly with molecule
-devbox run -- molecule test
-
-# Run specific molecule commands
-devbox run -- molecule create
-devbox run -- molecule converge
-devbox run -- molecule verify
-devbox run -- molecule idempotence
-devbox run -- molecule destroy
-
-# Run ansible-lint directly
-devbox run -- ansible-lint .
+# mise puts .venv/bin on PATH, so the tools can be called directly
+molecule test
+molecule create
+molecule converge
+molecule verify
+molecule idempotence
+molecule destroy
+ansible-lint .
 ```
 
 ## Architecture
@@ -71,7 +74,9 @@ The Forgejo Runner (CI/CD) is no longer part of this role. It now lives in **`sg
 
 ## Development Environment
 
-- **Devbox**: Used for consistent development environment
+- **mise**: Provisions the toolchain (Python 3.12, uv, task) and activates a project-local `.venv`; see `mise.toml`
+- **uv**: Installs the pinned ansible-core/molecule/ansible-lint stack into `.venv`, so every tool shares one interpreter
+- **Ansible collections**: Installed project-local into `.ansible/collections` via `ANSIBLE_COLLECTIONS_PATH`, not `~/.ansible`
 - **Task**: Task runner for common commands
 - **Molecule**: Testing framework using Docker containers
 - **ansible-lint**: Code quality checks
